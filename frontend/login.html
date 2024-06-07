@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YTB Login</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            background: linear-gradient(135deg, #e8f4fb, #e2cceb);
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(113, 183, 230, 0.7), rgba(155, 89, 182, 0.7));
+            animation: gradient 5s infinite alternate;
+            z-index: -1;
+        }
+
+        @keyframes gradient {
+            0% {
+                background: linear-gradient(135deg, rgba(113, 183, 230, 0.7), rgba(155, 89, 182, 0.7));
+            }
+
+            100% {
+                background: linear-gradient(135deg, rgba(155, 89, 182, 0.7), rgba(113, 183, 230, 0.7));
+            }
+        }
+
+        .login-container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .login-container h1 {
+            margin-bottom: 30px;
+            font-size: 24px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .login-container label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+            text-align: left;
+        }
+
+        .login-container input,
+        .login-container select {
+            display: block;
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .login-container button:hover {
+            background-color: #0056b3;
+        }
+
+        .login-container .register-btn {
+            background-color: #28a745;
+        }
+
+        .login-container .register-btn:hover {
+            background-color: #218838;
+        }
+
+        .form-toggle {
+            margin-bottom: 20px;
+        }
+
+        .form-toggle button {
+            width: auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .form-toggle button:hover {
+            background-color: #0056b3;
+        }
+
+        .form-toggle button.register-toggle {
+            background-color: #28a745;
+        }
+
+        .form-toggle button.register-toggle:hover {
+            background-color: #218838;
+        }
+
+        .registration-fields {
+            display: none;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            right: 0;
+            /* Change background color if needed */
+            padding: 10px;
+            text-align: center;
+            width: 100%;
+            /* Make the footer span the full width */
+        }
+    </style>
+</head>
+
+<body>
+    <h1 id="task-buddy" style="position: absolute; top: 0; z-index: 10;text-decoration:dotted;" class="hidden">Your
+        Task Buddy 😁</h1>
+    <div class="background"></div>
+    <div class="login-container">
+        <div class="form-toggle">
+            <button type="button" class="toggle-btn register-toggle" id="toggleRegister">Not registered?
+                Register</button>
+            <button type="button" class="toggle-btn" id="toggleLogin" style="display:none;">Already registered?
+                Login</button>
+        </div>
+        <div id="loginFormContainer">
+            <h1>Login</h1>
+            <form id="loginForm" onsubmit="return login(event);">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Enter your username" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+        <div id="registrationFields" class="registration-fields">
+            <h1>Register</h1>
+            <form id="registerForm" onsubmit="return register(event);">
+                <label for="reg-username">Username</label>
+                <input type="text" id="reg-username" placeholder="Enter your username" required>
+                <label for="reg-password">Password</label>
+                <input type="password" id="reg-password" placeholder="Enter your password" required>
+                <label for="team-name">Team Name</label>
+                <select id="team-name" required>
+                    <option>Choose your Team</option>
+                    <option value="Anshul">Anshul</option>
+                    <option value="Jasmine">Jasmine</option>
+                </select>
+                <button type="submit">Register</button>
+            </form>
+        </div>
+    </div>
+    <footer>
+        <p>Product developed & managed by Anshul</p>
+    </footer>
+    <script>
+        function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            if (username.trim() !== "" && password.trim() !== "") {
+                fetch('/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username,
+                            password
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.message === 'Login successful') {
+                            window.location.href = 'https://hjb3nmfz-3000.inc1.devtunnels.ms/manager-view.html';
+                        } else {
+                            alert(data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            } else {
+                alert('Please fill your credentials');
+            }
+        }
+
+        function register(event) {
+            event.preventDefault();
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            const teamName = document.getElementById('team-name').value;
+            if (username.trim() !== "" && password.trim() !== "" && teamName) {
+                fetch('/register', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username,
+                            password,
+                            teamName
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                        window.location.href = 'https://hjb3nmfz-3000.inc1.devtunnels.ms/index.html';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            } else {
+                alert('Please fill your details');
+            }
+        }
+
+        function showRegisterFields() {
+            document.getElementById('loginFormContainer').style.display = 'none';
+            document.getElementById('registrationFields').style.display = 'block';
+            document.getElementById('toggleRegister').style.display = 'none';
+            document.getElementById('toggleLogin').style.display = 'inline-block';
+        }
+
+        function showLoginFields() {
+            document.getElementById('registrationFields').style.display = 'none';
+            document.getElementById('loginFormContainer').style.display = 'block';
+            document.getElementById('toggleLogin').style.display = 'none';
+            document.getElementById('toggleRegister').style.display = 'inline-block';
+        }
+
+        document.getElementById('toggleRegister').addEventListener('click', showRegisterFields);
+        document.getElementById('toggleLogin').addEventListener('click', showLoginFields);
+        //lazy load
+        document.addEventListener("DOMContentLoaded", function () {
+            var text = document.getElementById('task-buddy').innerText;
+            var length = text.length;
+            var delay = 100; // Adjust the delay between each character appearing (in milliseconds)
+            document.getElementById('task-buddy').innerHTML = "";
+            for (var i = 0; i < length; i++) {
+                (function (i) {
+                    setTimeout(function () {
+                        var char = text.charAt(i);
+                        document.getElementById('task-buddy').innerHTML +=
+                            '<span class="visible">' + char + '</span>';
+                    }, i * delay);
+                })(i);
+            }
+        });
+    </script>
+</body>
+
+</html>

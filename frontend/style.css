@@ -1,0 +1,169 @@
+body {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    background-color: #f3f3f3;
+    /* Background color */
+    /* Background image */
+    background-size: cover;
+    background-position: center;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+.task-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.task-bar .left-buttons,
+.task-bar .right-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.task-bar button,
+.task-bar a {
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-bar button:hover,
+.task-bar a:hover {
+    background-color: #003f7f;
+}
+
+.card {
+    width: 300px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    /* Card background color */
+}
+
+.card h1 {
+    margin-top: 0;
+}
+
+.card hr {
+    margin-bottom: 20px;
+}
+
+.card label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.card input[type="text"],
+.card select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+}
+
+.card button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.card button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+.successInfo {
+    color: green;
+}
+
+.todo-container label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.todo-container {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+
+
+
+    input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        box-sizing: border-box;
+    }
+
+    input[type="submit"] {
+        padding: 10px;
+        background-color: #28a745;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+    }
+
+    input[type="submit"]:hover {
+        background-color: #218838;
+    }
+}
+
+.getUpdate {
+    position: absolute;
+    top: 10px;
+    right: 1268px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+footer {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    background-color: #f8f9fa; /* Change background color if needed */
+    padding: 10px;
+    text-align: center;
+    width: 100%; /* Make the footer span the full width */
+}

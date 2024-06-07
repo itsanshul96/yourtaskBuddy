@@ -1,0 +1,320 @@
+/* manager view */
+body {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 60px auto 20px;
+}
+
+.task-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.task-bar .left-buttons,
+.task-bar .right-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.right-buttons .userId {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+    flex-grow: 1;
+}
+
+.task-bar button,
+.task-bar a {
+    background-color: #0056b3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.task-bar button:hover,
+.task-bar a:hover {
+    background-color: #003f7f;
+}
+
+
+.card {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+
+.heading {
+    margin-top: 0;
+    font-size: 24px;
+    color: #333;
+    text-align: center;
+}
+
+
+.resource {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #333;
+    text-align: center;
+}
+
+.list {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.list-item {
+    margin: 5px 0;
+    font-size: 16px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.list-item i {
+    margin-right: 5px;
+}
+
+.chart-container {
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 800px;
+}
+
+.top-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.top-bar a,
+.top-bar button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 5px;
+}
+
+.top-bar .refresh-button {
+    margin: 5px;
+}
+
+.containerr {
+    display: flex;
+    align-items: center;
+    margin: 5px;
+}
+
+.containerr .userId {
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+    flex-grow: 1;
+}
+
+.containerr #userDelete {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.containerr #userDelete i {
+    margin: 0;
+    /* Remove any default margin */
+}
+
+.heading {
+    text-align: center;
+    margin: 20px 0;
+}
+
+@media (max-width: 768px) {
+    .top-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .top-bar a,
+    .top-bar button {
+        width: 100%;
+        margin: 5px 0;
+    }
+
+    .containerr {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .containerr .userId {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+}
+
+/* Styles for the request help button */
+#requestHelpButton {
+    position: absolute;
+    /* Position the button within the card */
+    bottom: 5px;
+    /* Adjust the distance from the bottom */
+    right: 20px;
+    /* Adjust the distance from the right */
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#requestHelpButton:hover {
+    background-color: #0056b3;
+}
+
+/* Specific styles for the overloaded card */
+#overloadedCard {
+    position: relative;
+    /* Ensure the card is a positioned element */
+}
+
+
+
+/* new css*/
+/* Style for the auto-refresh toggle */
+.auto-refresh-toggle-container {
+    display: flex;
+    align-items: center;
+}
+
+.auto-refresh-toggle {
+    display: none;
+}
+
+.auto-refresh-label {
+    position: relative;
+    display: inline-block;
+    margin-right: 10px;
+    /* Adjust margin between toggle and label */
+    width: 50px;
+    /* Adjust width of the toggle */
+    height: 26px;
+    /* Adjust height of the toggle */
+    background-color: #ccc;
+    border-radius: 26px;
+    /* Ensure border-radius matches half of height */
+    transition: background-color 0.3s;
+    cursor: pointer;
+}
+
+.auto-refresh-label:after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    /* Adjust vertical position of the toggle circle */
+    left: 3px;
+    /* Adjust horizontal position of the toggle circle */
+    width: 20px;
+    /* Adjust size of the toggle circle */
+    height: 20px;
+    /* Adjust size of the toggle circle */
+    background-color: white;
+    border-radius: 50%;
+    transition: left 0.3s;
+}
+
+.auto-refresh-toggle:checked+.auto-refresh-label {
+    background-color: #2196F3;
+}
+
+.auto-refresh-toggle:checked+.auto-refresh-label:after {
+    left: calc(100% - 23px);
+    /* Adjust position of the toggle circle */
+}
+
+.auto-refresh-label:active:after {
+    width: 30px;
+    height: 30px;
+    top: 0;
+    left: 0;
+}
+
+.auto-refresh-toggle:checked+.auto-refresh-label:active:after {
+    width: 20px;
+    height: 20px;
+    top: 3px;
+    left: 3px;
+}
+
+/* Style for the text beside the toggle */
+.auto-refresh-text {
+    color: white;
+}
+
+.card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+}
+footer {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    background-color: #f8f9fa; /* Change background color if needed */
+    padding: 10px;
+    text-align: center;
+    width: 100%; /* Make the footer span the full width */
+}

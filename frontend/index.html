@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Status</title>
+    <!-- Include jQuery from a CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include jQuery UI from a CDN for the tooltip widget -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+</head>
+
+<body class="resourceViews">
+    <div class="task-bar">
+        <div class="left-buttons">
+            <a href="/manager-view.html">Get Dashboard</a>
+            <a href="/myTodoTask.html">Get To-DO Dashboard</a>
+        </div>
+        <span id="username"></span>
+        <div class="right-buttons">
+            <button class="refresh-button" onclick="location.reload();"><i class="fas fa-sync-alt"></i></button>
+            <button onclick="logout()">Logout</button>
+        </div>
+    </div>
+    <div class="card status-card">
+        <h1>Update Status</h1>
+        <hr>
+        <!-- <label for="userName">Your Name</label>
+            <input type="text" name="userName" id="userName" placeholder="Enter your Name" required> -->
+        <form id="status-form" onsubmit="updateData('updateStatus'); return false;">
+
+            <label for="status">Update your bandwidth status</label>
+            <select id="status" name="status" required onchange="showHideFields()">
+                <option value="">Select your bandwidth</option>
+                <option value="less than 1 hour">less than 1 hour</option>
+                <option value="2 hour">2 hour</option>
+                <option value="3 hour">3 hour</option>
+                <option value="4 hour">4 hour</option>
+                <option value="Fully Occupied">Fully Occupied</option>
+                <option value="Over loaded for the day, looking for help">Over loaded for the day, looking for help
+                </option>
+            </select>
+            <label class="ticketsCount" for="ticketsCount" style="display: none;">Tickets for the day?</label>
+            <input style="display: none;" class="ticketsCount" type="text" name="ticketsCount" id="ticketsCount"
+                placeholder="Your Total Ticket count for the day?" required>
+            <button type="submit">Update</button>
+            <span class="successInfo"></span>
+        </form>
+    </div>
+    <!-- to do html -->
+    <div class="todo-container" style="display: none;">
+        <h1>To-Do List</h1>
+        <hr>
+        <!-- To-Do List Form Start -->
+        <form id="todo-form" onsubmit="updateData('updateToDo'); return false;">
+            <label for="userNameTodo">Your Name</label>
+            <input type="text" name="userNameTodo" id="userNameTodo" placeholder="Enter your Name" required>
+            <input type="text" id="todo-input" placeholder="Enter a new to-do" required>
+            <input type="submit" value="Add To-Do">
+        </form>
+        <input type="submit" onclick="toDoDashBoard();" value="Get To-Do Dashboard">
+        <!-- To-Do List Form End -->
+        <ul id="todo-list"></ul>
+    </div>
+    <footer>
+        <p>Product developed & managed by Anshul</p>
+    </footer>
+</body>
+
+</html>
