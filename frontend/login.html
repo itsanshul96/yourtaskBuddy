@@ -208,7 +208,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.message === 'Login successful') {
-                            window.location.href = 'https://hjb3nmfz-3000.inc1.devtunnels.ms/manager-view.html';
+                            window.location.href = '/manager-view.html';
                         } else {
                             alert(data.message);
                         }
@@ -241,7 +241,7 @@
                     .then(response => response.json())
                     .then(data => {
                         alert(data.message);
-                        window.location.href = 'https://hjb3nmfz-3000.inc1.devtunnels.ms/index.html';
+                        window.location.href = '/index.html';
                     })
                     .catch(error => {
                         console.error('Error:', error);
