@@ -361,6 +361,38 @@ $(document).ready(function () {
             });
     }
 
+    function showCollaboratorPopup(task) {
+        fetch('/team-members')
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('collaborator-select');
+                select.innerHTML = '<option>Select</option>';
+                data.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member.id;
+                    option.textContent = member.username;
+                    select.appendChild(option);
+                });
+                $('#collaborator-popup').dialog({
+                    autoOpen: true,
+                    modal: true,
+                    buttons: {
+                        "Save": function () {
+                            const collaboratorId = select.value;
+                            addCollaborator(task, collaboratorId);
+                            $(this).dialog('close');
+                        },
+                        "Cancel": function () {
+                            $(this).dialog('close');
+                        }
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching team members:', error);
+            });
+    }
+
     function displayTodos() {
         const container = document.getElementById('todo-lists-container');
         container.innerHTML = '';
@@ -399,19 +431,24 @@ $(document).ready(function () {
                     buttonsDiv.classList.add('buttons-right');
 
                     const markDoneButton = document.createElement('button');
-                    markDoneButton.textContent = 'Done';
+                    markDoneButton.innerHTML = '<i class="fas fa-check"></i>';
                     markDoneButton.onclick = () => markAsDone(userIdFromDb, todoItem.task);
                     buttonsDiv.appendChild(markDoneButton);
 
                     const editButton = document.createElement('button');
-                    editButton.textContent = 'Edit';
+                    editButton.innerHTML = '<i class="fas fa-edit" alt="Edit"></i>';
                     editButton.onclick = () => editToDoItem(userIdFromDb, todoItem.task);
                     buttonsDiv.appendChild(editButton);
 
                     const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Delete';
+                    deleteButton.innerHTML = '<i class="fas fa-trash-alt"></i>';
                     deleteButton.onclick = () => deleteToDoItem(userIdFromDb, todoItem.task);
                     buttonsDiv.appendChild(deleteButton);
+
+                    const collaboratorButton = document.createElement('button');
+                    collaboratorButton.innerHTML = '<i class="fas fa-user-friends"></i>';
+                    collaboratorButton.onclick = () => showCollaboratorPopup(todoItem.task);
+                    buttonsDiv.appendChild(collaboratorButton);
 
                     li.appendChild(buttonsDiv);
                     ul.appendChild(li);
@@ -438,6 +475,15 @@ $(document).ready(function () {
             container.appendChild(userCard);
         }
     }
+
+    // function toggleButtons(listItem) {
+    //     const buttons = listItem.querySelector('.buttons-right');
+    //     if (buttons.style.display === 'flex') {
+    //         buttons.style.display = 'none';
+    //     } else {
+    //         buttons.style.display = 'flex';
+    //     }
+    // }
 
     function markAsDone(userId, toDo) {
         fetch('/mark-done', {
@@ -558,6 +604,27 @@ $(document).ready(function () {
                     console.error('Error deleting user card:', error);
                 });
         }
+    }
+
+    function addCollaborator(task, collaboratorId) {
+        fetch('/add-collaborator', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    task,
+                    collaboratorId
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to add collaborator');
+                }
+                alert('Collaborator added successfully');
+                fetchTodos();
+            })
+            .catch(error => console.error('Error adding collaborator:', error));
     }
 });
 
@@ -751,7 +818,7 @@ async function viewClients(event) {
         const accessGranted = sheet.accessTo === loginUser.allOtherUser || sheet.accessTo.includes(loginUser.username);
 
         if (!accessGranted) {
-            $('#permissionRightsMsg').text('Permission Denied.');
+            $('#permissionRightsMsg').text('Accesss Denied.');
             $('iframe').hide();
             return;
         } else {

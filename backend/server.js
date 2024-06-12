@@ -453,6 +453,66 @@ app.get('/download-completed-tasks', isAuthenticated, (req, res) => {
         res.send(csv);
     });
 });
+// Route to fetch team members
+app.get('/team-members', isAuthenticated, (req, res) => {
+    const userId = req.session.user;
+    const query = 'SELECT teamName FROM users WHERE id = ?';
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            res.status(500).send({
+                error: 'Database error'
+            });
+            return;
+        }
+        const teamName = results[0].teamName;
+        const teamMembersQuery = 'SELECT id, username FROM users WHERE teamName = ? AND id != ?';
+        db.query(teamMembersQuery, [teamName, userId], (err, members) => {
+            if (err) {
+                res.status(500).send({
+                    error: 'Database error'
+                });
+                return;
+            }
+            res.json(members);
+        });
+    });
+});
+
+// Route to add a collaborator to a task
+app.post('/add-collaborator', isAuthenticated, (req, res) => {
+    const {
+        task,
+        collaboratorId
+    } = req.body;
+    const userId = req.session.user;
+
+    // Insert the task for the collaborator
+    const insertTaskQuery = 'INSERT INTO todos (user_id, task, done) VALUES (?, ?, FALSE)';
+    db.query(insertTaskQuery, [collaboratorId, task], (err) => {
+        if (err) {
+            res.status(500).send({
+                error: 'Database error'
+            });
+            return;
+        }
+
+        // Add collaborator info to the original task (if necessary)
+        const updateTaskQuery = 'UPDATE todos SET collaborator_id = ? WHERE user_id = ? AND task = ?';
+        db.query(updateTaskQuery, [collaboratorId, userId, task], (err) => {
+            if (err) {
+                res.status(500).send({
+                    error: 'Database error'
+                });
+                return;
+            }
+            res.send({
+                success: true,
+                message: 'Collaborator added successfully'
+            });
+        });
+    });
+});
+
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
