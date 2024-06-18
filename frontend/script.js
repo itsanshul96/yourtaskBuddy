@@ -34,9 +34,9 @@ async function updateData(action) {
         alert(`${action.replace('update', '')} updated successfully`);
 
         if (action === "updateStatus") {
-            window.location.href = 'https://hjb3nmfz-3000.inc1.devtunnels.ms/manager-view.html';
+            window.location.href = '/manager-view.html';
         } else if (action === "updateToDo") {
-            window.location.href = 'https://hjb3nmfz-3000.inc1.devtunnels.ms/myTodoTask.html';
+            window.location.href = '/myTodoTask.html';
         }
     } catch (error) {
         console.error(error);
@@ -88,21 +88,21 @@ $(document).ready(async function () {
 });
 
 async function fetchData() {
-    if (permissionRightsForDashboard.indexOf(loginUser.teamName) !== -1) {
-        if ($('#lessThan1HourCard').length) {
-            try {
-                const response = await fetch('/team-status');
-                const teamStatus = await response.json();
+    showLoader();
+    if ($('#lessThan1HourCard').length) {
+        try {
+            const response = await fetch('/team-status');
+            const teamStatus = await response.json();
 
-                if (!teamStatus) {
-                    console.error('Team status data is undefined or null');
-                    return;
-                }
+            if (!teamStatus) {
+                console.error('Team status data is undefined or null');
+                return;
+            }
 
-                // Clear existing lists
-                $('#lessThan1HourList, #2HourList, #3HourList, #4HourList, #fullyOccupiedList, #overloadedList').empty();
-
-                teamStatus.forEach(element => {
+            // Clear existing lists
+            $('#lessThan1HourList, #2HourList, #3HourList, #4HourList, #fullyOccupiedList, #overloadedList').empty();
+            teamStatus.forEach(element => {
+                if (element.teamName === loginUser.teamName) {
                     let listItem = `<li>&#x2022; ${element.username} : ${element.tickets_count}</li>`;
                     switch (element.status) {
                         case "less than 1 hour":
@@ -131,17 +131,40 @@ async function fetchData() {
                         default:
                             console.log("No User found");
                     }
-                });
-            } catch (error) {
-                console.error('Failed to fetch team status:', error);
-            }
+                }
+            });
+        } catch (error) {
+            console.error('Failed to fetch team status:', error);
         }
-    } else {
-        $('#permissionRightsMsg').text('You do not have permission to view this page. Kindly Contact to Admin');
-        $('.viewData').hide();
-        $('#clientLists').hide();
     }
+    hideLoader();
 }
+document.addEventListener('DOMContentLoaded', (event) => {
+    // Show the loader when the page starts loading
+    showLoader();
+
+    // Simulate a delay to hide the loader after 3 seconds
+    // setTimeout(() => {
+    //     hideLoader();
+    // }, 3000);
+});
+
+function showLoader() {
+    const loader = document.getElementById('loader');
+    const overlay = document.getElementById('overlay');
+
+    loader.style.display = 'block';
+    overlay.style.display = 'block';
+}
+
+function hideLoader() {
+    const loader = document.getElementById('loader');
+    const overlay = document.getElementById('overlay');
+
+    loader.style.display = 'none';
+    overlay.style.display = 'none';
+}
+
 
 function toggleAutoRefresh() {
     if ($('#lessThan1HourCard').length) {
@@ -269,7 +292,7 @@ async function listenForHelpRequests() {
 }
 async function acceptHelpRequest(userId) {
     try {
-        const response = await fetch('/accept-help-request', {
+        const response = await fetch('/accept-help', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -321,13 +344,12 @@ function markHelpDone() {
 
 setInterval(listenForHelpRequests, 10000);
 
-let completedTasks = [];
 $(document).ready(function () {
     let userIdFromDb = "";
     let userNameDb = "";
     let todoLists = [];
     let taskStatus;
-
+    showLoader();
     fetch('/get-user')
         .then(response => response.json())
         .then(data => {
@@ -474,6 +496,7 @@ $(document).ready(function () {
 
             container.appendChild(userCard);
         }
+        hideLoader();
     }
 
     // function toggleButtons(listItem) {
@@ -661,55 +684,156 @@ function addNewCard() {
         });
 }
 
+let completedTasks = [];
+let currentPage = 0;
+const tasksPerPage = 10;
+
 function viewCompletedTasks() {
     const container = document.getElementById('todo-lists-container');
     container.style.display = 'none'; // Hide the to-do container
 
-    fetch('/completed-todos')
+    fetchCompletedTasks();
+}
+
+function fetchCompletedTasks(page = 0, dateFrom = null, dateTo = null) {
+    const url = new URL('/completed-todos', window.location.origin);
+    url.searchParams.append('page', page);
+    url.searchParams.append('limit', tasksPerPage);
+    if (dateFrom) url.searchParams.append('dateFrom', dateFrom);
+    if (dateTo) url.searchParams.append('dateTo', dateTo);
+
+    fetch(url)
         .then(response => response.json())
         .then(data => {
-            if (completedTasks.length === 0) {
-                completedTasks = data;
-                const completedContainer = document.createElement('div');
-                completedContainer.id = 'completed-tasks-container';
-                completedContainer.innerHTML = '<h2>Completed Tasks</h2>';
-                const downloadButton = document.createElement('button');
-                downloadButton.textContent = 'Download CSV';
-                downloadButton.onclick = downloadCompletedTasks;
-                completedContainer.appendChild(downloadButton);
-
-                const table = document.createElement('table');
-                table.classList.add('completed-tasks-table');
-
-                const headerRow = document.createElement('tr');
-                const taskHeader = document.createElement('th');
-                taskHeader.textContent = 'Task';
-                const dateHeader = document.createElement('th');
-                dateHeader.textContent = 'Completed Date';
-                headerRow.appendChild(taskHeader);
-                headerRow.appendChild(dateHeader);
-                table.appendChild(headerRow);
-
-                data.forEach(todo => {
-                    const row = document.createElement('tr');
-                    const taskCell = document.createElement('td');
-                    taskCell.textContent = todo.task;
-                    const dateCell = document.createElement('td');
-                    dateCell.textContent = new Date(todo.completed_at).toLocaleDateString();
-                    row.appendChild(taskCell);
-                    row.appendChild(dateCell);
-                    table.appendChild(row);
-                });
-
-                completedContainer.appendChild(table);
-                document.body.appendChild(completedContainer);
+            if (!Array.isArray(data)) {
+                throw new Error('Invalid response structure');
             }
+
+            completedTasks = data; // Update with the current page data
+
+            createCompletedTasksContainer(); // Ensure the container and table are created
+            appendToCompletedTasksTable(data);
+            currentPage = page;
+            updatePaginationControls(data.length);
         })
         .catch(error => console.error('Error fetching completed tasks:', error));
 }
 
+function createCompletedTasksContainer() {
+    let completedContainer = document.getElementById('completed-tasks-container');
+    if (!completedContainer) {
+        completedContainer = document.createElement('div');
+        completedContainer.id = 'completed-tasks-container';
+        completedContainer.innerHTML = '<h2>Completed Tasks</h2>';
+
+        const filterContainer = document.createElement('div');
+        filterContainer.classList.add('filter-container');
+        filterContainer.innerHTML = `
+            <label for="dateFrom">From:</label>
+            <input type="date" id="dateFrom">
+            <label for="dateTo">To:</label>
+            <input type="date" id="dateTo">
+            <button onclick="applyDateFilter()">Apply Filter</button>
+        `;
+        completedContainer.appendChild(filterContainer);
+
+        const downloadButton = document.createElement('button');
+        downloadButton.id = 'download-button';
+        downloadButton.textContent = 'Download CSV';
+        downloadButton.onclick = downloadCompletedTasks;
+        filterContainer.appendChild(downloadButton);
+
+        const table = document.createElement('table');
+        table.classList.add('completed-tasks-table');
+        table.id = 'completed-tasks-table';
+
+        const headerRow = document.createElement('tr');
+        const taskHeader = document.createElement('th');
+        taskHeader.textContent = 'Task';
+        const dateHeader = document.createElement('th');
+        dateHeader.textContent = 'Completed Date';
+        headerRow.appendChild(taskHeader);
+        headerRow.appendChild(dateHeader);
+        table.appendChild(headerRow);
+
+        completedContainer.appendChild(table);
+
+        const paginationControls = document.createElement('div');
+        paginationControls.id = 'pagination-controls';
+        paginationControls.innerHTML = `
+            <button id="prev-page-button" onclick="prevPage()" disabled>Previous</button>
+            <span id="current-page-info">Page 1</span>
+            <button id="next-page-button" onclick="nextPage()">Next</button>
+        `;
+        completedContainer.appendChild(paginationControls);
+
+        document.body.appendChild(completedContainer);
+    }
+}
+
+function appendToCompletedTasksTable(tasks) {
+    const table = document.getElementById('completed-tasks-table');
+    if (!table) {
+        console.error('Table element not found');
+        return;
+    }
+    // Clear existing rows except the header
+    table.querySelectorAll('tr:not(:first-child)').forEach(row => row.remove());
+
+    // Append new rows
+    tasks.forEach(todo => {
+        const row = document.createElement('tr');
+        const taskCell = document.createElement('td');
+        taskCell.textContent = todo.task;
+        const dateCell = document.createElement('td');
+        dateCell.textContent = new Date(todo.completed_at).toLocaleDateString();
+        row.appendChild(taskCell);
+        row.appendChild(dateCell);
+        table.appendChild(row);
+    });
+}
+
+function loadMoreCompletedTasks() {
+    fetchCompletedTasks(currentPage + 1);
+}
+
+function applyDateFilter() {
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
+    currentPage = 0; // Reset page number for new filter
+    fetchCompletedTasks(0, dateFrom, dateTo);
+}
+
+function updatePaginationControls(dataLength) {
+    const prevButton = document.getElementById('prev-page-button');
+    const nextButton = document.getElementById('next-page-button');
+    const pageInfo = document.getElementById('current-page-info');
+
+    prevButton.disabled = currentPage === 0;
+    pageInfo.textContent = `Page ${currentPage + 1}`;
+    nextButton.disabled = dataLength < tasksPerPage; // Disable next button if fewer than 10 records
+}
+
+function prevPage() {
+    if (currentPage > 0) {
+        fetchCompletedTasks(currentPage - 1);
+    }
+}
+
+function nextPage() {
+    fetchCompletedTasks(currentPage + 1);
+}
+
+
+
 function downloadCompletedTasks() {
-    fetch('/download-completed-tasks')
+    const dateFrom = document.getElementById('dateFrom').value;
+    const dateTo = document.getElementById('dateTo').value;
+    let url = '/download-completed-tasks';
+    if (dateFrom || dateTo) {
+        url += `?dateFrom=${dateFrom}&dateTo=${dateTo}`;
+    }
+    fetch(url)
         .then(response => response.blob())
         .then(blob => {
             const url = window.URL.createObjectURL(blob);

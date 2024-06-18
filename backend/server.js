@@ -12,22 +12,18 @@ const app = express();
 const PORT = 3000;
 let helpRequests = []; // Array to store help requests
 
-// MySQL connection setup
-const db = mysql.createConnection({
+// MySQL connection pool setup
+const pool = mysql.createPool({
     host: 'db4free.net',
     user: 'daily_news',
     password: 'Anshul@963258',
     database: 'dailynewsdb',
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0,
     connectTimeout: 35000 // Increase the timeout value if needed
 });
 
-db.connect((err) => {
-    if (err) {
-        console.error('Database connection failed: ' + err.stack);
-        return;
-    }
-    console.log('Connected to database.');
-});
 // Middleware to parse JSON bodies
 app.use(express.json());
 app.use(express.urlencoded({
@@ -60,7 +56,7 @@ app.post('/login', (req, res) => {
         password
     } = req.body;
     const query = 'SELECT * FROM users WHERE username = ?';
-    db.query(query, [username], (err, results) => {
+    pool.query(query, [username], (err, results) => {
         if (err) throw err;
         console.log('results', results);
         if (results.length > 0) {
@@ -96,7 +92,7 @@ app.post('/register', (req, res) => {
     console.log('Password', password, 'hashed password', hashedPassword);
 
     const checkUserQuery = 'SELECT * FROM users WHERE username = ?';
-    db.query(checkUserQuery, [username], (err, results) => {
+    pool.query(checkUserQuery, [username], (err, results) => {
         if (err) throw err;
         if (results.length > 0) {
             res.status(400).send({
@@ -104,7 +100,7 @@ app.post('/register', (req, res) => {
             });
         } else {
             const insertUserQuery = 'INSERT INTO users (username, password,teamName) VALUES (?, ?, ?)';
-            db.query(insertUserQuery, [username, hashedPassword, teamName], (err) => {
+            pool.query(insertUserQuery, [username, hashedPassword, teamName], (err) => {
                 if (err) throw err;
                 res.send({
                     message: 'User registered successfully'
@@ -133,7 +129,7 @@ app.post('/update-status', isAuthenticated, (req, res) => {
 
     if (status) {
         const checkStatusQuery = 'SELECT * FROM team_status WHERE user_id = ?';
-        db.query(checkStatusQuery, [userId], (err, results) => {
+        pool.query(checkStatusQuery, [userId], (err, results) => {
             if (err) return res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -141,7 +137,7 @@ app.post('/update-status', isAuthenticated, (req, res) => {
 
             if (results.length > 0) {
                 const updateStatusQuery = 'UPDATE team_status SET status = ?, tickets_count = ? WHERE user_id = ?';
-                db.query(updateStatusQuery, [status, ticketsCount, userId], (err) => {
+                pool.query(updateStatusQuery, [status, ticketsCount, userId], (err) => {
                     if (err) return res.status(500).json({
                         success: false,
                         message: 'Internal server error'
@@ -153,7 +149,7 @@ app.post('/update-status', isAuthenticated, (req, res) => {
                 });
             } else {
                 const insertStatusQuery = 'INSERT INTO team_status (user_id, status, tickets_count) VALUES (?, ?, ?)';
-                db.query(insertStatusQuery, [userId, status, ticketsCount], (err) => {
+                pool.query(insertStatusQuery, [userId, status, ticketsCount], (err) => {
                     if (err) return res.status(500).json({
                         success: false,
                         message: 'Internal server error'
@@ -169,7 +165,7 @@ app.post('/update-status', isAuthenticated, (req, res) => {
 
     if (toDoList) {
         const insertToDoQuery = 'INSERT INTO todos (user_id, task, done) VALUES (?, ?, FALSE)';
-        db.query(insertToDoQuery, [userId, toDoList], (err) => {
+        pool.query(insertToDoQuery, [userId, toDoList], (err) => {
             if (err) return res.status(500).json({
                 success: false,
                 message: 'Internal server error'
@@ -186,7 +182,7 @@ app.post('/update-status', isAuthenticated, (req, res) => {
 app.get('/all-todos', isAuthenticated, (req, res) => {
     const userId = req.session.user;
     const getToDosQuery = 'SELECT * FROM todos WHERE user_id = ?';
-    db.query(getToDosQuery, [userId], (err, results) => {
+    pool.query(getToDosQuery, [userId], (err, results) => {
         if (err) throw err;
         res.json({
             [userId]: results
@@ -198,7 +194,7 @@ app.get('/all-todos', isAuthenticated, (req, res) => {
 app.get('/get-todo', isAuthenticated, (req, res) => {
     const userId = req.session.user;
     const getToDosQuery = 'SELECT * FROM todos WHERE user_id = ?';
-    db.query(getToDosQuery, [userId], (err, results) => {
+    pool.query(getToDosQuery, [userId], (err, results) => {
         if (err) throw err;
         res.json(results);
     });
@@ -212,7 +208,7 @@ app.post('/edit-todo', isAuthenticated, (req, res) => {
     } = req.body;
     const userId = req.session.user;
     const updateToDoQuery = 'UPDATE todos SET task = ? WHERE user_id = ? AND task = ?';
-    db.query(updateToDoQuery, [newToDo, userId, oldToDo], (err, results) => {
+    pool.query(updateToDoQuery, [newToDo, userId, oldToDo], (err, results) => {
         if (err) throw err;
         res.send('To-do edited successfully');
     });
@@ -225,7 +221,7 @@ app.delete('/delete-todo', isAuthenticated, (req, res) => {
     } = req.body;
     const userId = req.session.user;
     const deleteToDoQuery = 'DELETE FROM todos WHERE user_id = ? AND task = ?';
-    db.query(deleteToDoQuery, [userId, toDo], (err, results) => {
+    pool.query(deleteToDoQuery, [userId, toDo], (err, results) => {
         if (err) throw err;
         res.send('To-do deleted successfully');
     });
@@ -238,7 +234,7 @@ app.post('/mark-done', isAuthenticated, (req, res) => {
     } = req.body;
     const userId = req.session.user;
     const markDoneQuery = 'UPDATE todos SET done = TRUE, completed_at = NOW() WHERE user_id = ? AND task = ?';
-    db.query(markDoneQuery, [userId, toDo], (err, results) => {
+    pool.query(markDoneQuery, [userId, toDo], (err, results) => {
         if (err) throw err;
         res.send('To-do marked as done');
     });
@@ -258,7 +254,7 @@ app.delete('/delete-user/:userId', isAuthenticated, (req, res) => {
         FROM team_status
         JOIN users ON team_status.user_id = users.id
     `;
-    db.query(getTeamStatusQuery, (err, results) => {
+    pool.query(getTeamStatusQuery, (err, results) => {
         if (err) {
             console.error('Error fetching team status:', err);
             return res.status(500).json({
@@ -276,7 +272,7 @@ app.delete('/delete-user/:userId', isAuthenticated, (req, res) => {
             console.log('user_id', user_id);
             setTimeout(() => {
                 const deleteStatusQuery = 'DELETE FROM team_status WHERE user_id = ?';
-                db.query(deleteStatusQuery, [user_id], (err) => {
+                pool.query(deleteStatusQuery, [user_id], (err) => {
                     if (err) throw err;
                 });
             }, 1000);
@@ -284,14 +280,14 @@ app.delete('/delete-user/:userId', isAuthenticated, (req, res) => {
 
         if (pathname === "/myTodoTask.html" || pathname === "/deleteUserAccount.html") {
             const deleteToDosQuery = 'DELETE FROM todos WHERE done = 0 and user_id = ?';
-            db.query(deleteToDosQuery, [userId], (err) => {
+            pool.query(deleteToDosQuery, [userId], (err) => {
                 if (err) throw err;
             });
         }
 
         if (pathname === "/deleteUserAccount.html") {
             const deleteUserQuery = 'DELETE FROM users WHERE username = ?';
-            db.query(deleteUserQuery, [userId], (err) => {
+            pool.query(deleteUserQuery, [userId], (err) => {
                 if (err) throw err;
             });
         }
@@ -307,7 +303,7 @@ app.get('/team-status', isAuthenticated, (req, res) => {
         FROM team_status
         JOIN users ON team_status.user_id = users.id
     `;
-    db.query(getTeamStatusQuery, (err, results) => {
+    pool.query(getTeamStatusQuery, (err, results) => {
         if (err) throw err;
         res.json(results);
     });
@@ -318,10 +314,10 @@ app.get('/get-user', isAuthenticated, (req, res) => {
     const userId = req.session.user;
     const getUserQuery = 'SELECT username,id,teamName FROM users WHERE id = ?';
     const allUserExceptLoggedOne = 'SELECT username FROM users';
-    db.query(getUserQuery, [userId], (err, results) => {
+    pool.query(getUserQuery, [userId], (err, results) => {
         if (err) throw err;
 
-        db.query(allUserExceptLoggedOne, (err, otherUsersResults) => {
+        pool.query(allUserExceptLoggedOne, (err, otherUsersResults) => {
             if (err) {
                 res.status(500).json({
                     error: 'Database error'
@@ -377,7 +373,7 @@ app.get('/check-help-requests', isAuthenticated, (req, res) => {
         FROM team_status
         JOIN users ON team_status.user_id = users.id
     `;
-    db.query(getTeamStatusQuery, (err, results) => {
+    pool.query(getTeamStatusQuery, (err, results) => {
         if (err) {
             console.error('Error fetching team status:', err);
             return res.status(500).json({
@@ -411,10 +407,11 @@ app.get('/check-help-requests', isAuthenticated, (req, res) => {
 app.post('/accept-help', isAuthenticated, (req, res) => {
     const {
         helperId,
-        requesterId
+        userId
     } = req.body;
     // Find and remove the help request
-    const index = helpRequests.findIndex(request => request.userId === requesterId);
+    const index = helpRequests.findIndex(request => request.userId === userId);
+    console.log('index', index);
     if (index !== -1) {
         helpRequests.splice(index, 1);
         // Optionally, notify the requester (you may implement this based on your app's notification system)
@@ -430,8 +427,26 @@ app.post('/accept-help', isAuthenticated, (req, res) => {
 // Endpoint to get completed tasks
 app.get('/completed-todos', isAuthenticated, (req, res) => {
     const userId = req.session.user;
-    const getCompletedToDosQuery = 'SELECT * FROM todos WHERE user_id = ? AND done = TRUE ORDER BY completed_at DESC';
-    db.query(getCompletedToDosQuery, [userId], (err, results) => {
+    const page = parseInt(req.query.page) || 0;
+    const limit = parseInt(req.query.limit) || 15;
+    const dateFrom = req.query.dateFrom;
+    const dateTo = req.query.dateTo;
+    let queryParams = [userId, limit, page * limit];
+    let dateFilter = '';
+
+    if (dateFrom && dateTo) {
+        dateFilter = ' AND completed_at BETWEEN ? AND ?';
+        queryParams = [userId, dateFrom, dateTo, limit, page * limit];
+    } else if (dateFrom) {
+        dateFilter = ' AND completed_at >= ?';
+        queryParams = [userId, dateFrom, limit, page * limit];
+    } else if (dateTo) {
+        dateFilter = ' AND completed_at <= ?';
+        queryParams = [userId, dateTo, limit, page * limit];
+    }
+
+    const getCompletedToDosQuery = `SELECT * FROM todos WHERE user_id = ? AND done = TRUE ${dateFilter} ORDER BY completed_at DESC LIMIT ? OFFSET ?`;
+    pool.query(getCompletedToDosQuery, queryParams, (err, results) => {
         if (err) throw err;
         res.json(results);
     });
@@ -440,8 +455,24 @@ app.get('/completed-todos', isAuthenticated, (req, res) => {
 // Endpoint to download completed tasks as CSV
 app.get('/download-completed-tasks', isAuthenticated, (req, res) => {
     const userId = req.session.user;
-    const getCompletedToDosQuery = 'SELECT task, completed_at FROM todos WHERE user_id = ? AND done = TRUE ORDER BY completed_at DESC';
-    db.query(getCompletedToDosQuery, [userId], (err, results) => {
+    const dateFrom = req.query.dateFrom;
+    const dateTo = req.query.dateTo;
+    let queryParams = [userId];
+    let dateFilter = '';
+
+    if (dateFrom && dateTo) {
+        dateFilter = ' AND completed_at BETWEEN ? AND ?';
+        queryParams = [userId, dateFrom, dateTo];
+    } else if (dateFrom) {
+        dateFilter = ' AND completed_at >= ?';
+        queryParams = [userId, dateFrom];
+    } else if (dateTo) {
+        dateFilter = ' AND completed_at <= ?';
+        queryParams = [userId, dateTo];
+    }
+
+    const getCompletedToDosQuery = `SELECT task, completed_at FROM todos WHERE user_id = ? AND done = TRUE ${dateFilter} ORDER BY completed_at DESC`;
+    pool.query(getCompletedToDosQuery, queryParams, (err, results) => {
         if (err) throw err;
         const fields = ['task', 'completed_at'];
         const json2csvParser = new Parser({
@@ -457,7 +488,7 @@ app.get('/download-completed-tasks', isAuthenticated, (req, res) => {
 app.get('/team-members', isAuthenticated, (req, res) => {
     const userId = req.session.user;
     const query = 'SELECT teamName FROM users WHERE id = ?';
-    db.query(query, [userId], (err, results) => {
+    pool.query(query, [userId], (err, results) => {
         if (err) {
             res.status(500).send({
                 error: 'Database error'
@@ -466,7 +497,7 @@ app.get('/team-members', isAuthenticated, (req, res) => {
         }
         const teamName = results[0].teamName;
         const teamMembersQuery = 'SELECT id, username FROM users WHERE teamName = ? AND id != ?';
-        db.query(teamMembersQuery, [teamName, userId], (err, members) => {
+        pool.query(teamMembersQuery, [teamName, userId], (err, members) => {
             if (err) {
                 res.status(500).send({
                     error: 'Database error'
@@ -488,7 +519,7 @@ app.post('/add-collaborator', isAuthenticated, (req, res) => {
 
     // Insert the task for the collaborator
     const insertTaskQuery = 'INSERT INTO todos (user_id, task, done) VALUES (?, ?, FALSE)';
-    db.query(insertTaskQuery, [collaboratorId, task], (err) => {
+    pool.query(insertTaskQuery, [collaboratorId, task], (err) => {
         if (err) {
             res.status(500).send({
                 error: 'Database error'
@@ -498,7 +529,7 @@ app.post('/add-collaborator', isAuthenticated, (req, res) => {
 
         // Add collaborator info to the original task (if necessary)
         const updateTaskQuery = 'UPDATE todos SET collaborator_id = ? WHERE user_id = ? AND task = ?';
-        db.query(updateTaskQuery, [collaboratorId, userId, task], (err) => {
+        pool.query(updateTaskQuery, [collaboratorId, userId, task], (err) => {
             if (err) {
                 res.status(500).send({
                     error: 'Database error'
