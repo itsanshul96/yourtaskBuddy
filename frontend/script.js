@@ -80,6 +80,9 @@ $(document).ready(async function () {
             $('.userId').hide();
             $('#userDelete').hide();
         }
+        if (loginUser.teamName !== "Anshul") {
+            $('#clientLists').hide();
+        }
     } catch (error) {
         console.error('Error fetching user:', error);
     }
@@ -103,6 +106,7 @@ async function fetchData() {
             $('#lessThan1HourList, #2HourList, #3HourList, #4HourList, #fullyOccupiedList, #overloadedList').empty();
             teamStatus.forEach(element => {
                 if (element.teamName === loginUser.teamName) {
+                    //console.log(element.teamName, loginUser.teamName);
                     let listItem = `<li>&#x2022; ${element.username} : ${element.tickets_count}</li>`;
                     switch (element.status) {
                         case "less than 1 hour":
@@ -132,6 +136,11 @@ async function fetchData() {
                             console.log("No User found");
                     }
                 }
+                // else {
+                //     console.log("else")
+                //     $('.viewData').hide();
+                //     $('#permissionRightsMsg').text('Go to the "Update Status" tab on the taskbar and update your status.');
+                // }
             });
         } catch (error) {
             console.error('Failed to fetch team status:', error);
@@ -225,7 +234,7 @@ function openUpdateStatusForm() {
 }
 
 function toDoDashBoard() {
-    $(location).attr('href', 'https://hjb3nmfz-3000.inc1.devtunnels.ms/myTodoTask.html');
+    $(location).attr('href', 'https://s8g04bhj-3000.inc1.devtunnels.ms/myTodoTask.html');
 }
 
 async function logout() {
@@ -245,9 +254,8 @@ async function logout() {
 function toggleAddUserForm() {
     $("#add-user-form").dialog('open');
 }
-
-// request help frontend request management logic
 async function raiseRequest() {
+    // request help frontend request management logic
     try {
         const response = await fetch('/request-help', {
             method: 'POST',
@@ -270,44 +278,82 @@ async function raiseRequest() {
 function getLoggedInUserId() {
     return document.getElementById('username').textContent.split(', ')[1];
 }
+$(document).ready(function () {
 
-let notificationSound = new Audio('/WCSC5KW-message-notification.mp3');
+    let notificationSound = new Audio('/WCSC5KW-message-notification.mp3');
 
-async function listenForHelpRequests() {
-    try {
-        const response = await fetch('/check-help-requests');
-        const data = await response.json();
+    async function listenForHelpRequests() {
+        try {
+            const response = await fetch('/check-help-requests');
+            const data = await response.json();
 
-        if (data.helpRequests && data.helpRequests.length > 0) {
-            data.helpRequests.forEach(request => {
-                notificationSound.play();
-                if (confirm(`${request.userId} needs help. Do you want to help?`)) {
-                    acceptHelpRequest(request.userId);
-                }
-            });
+            if (data.helpRequests && data.helpRequests.length > 0) {
+                data.helpRequests.forEach(request => {
+                    notificationSound.play();
+                    if (confirm(`${request.userId} needs help. Do you want to help?`)) {
+                        acceptHelpRequest(request.userId);
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error listening for help requests:', error);
         }
-    } catch (error) {
-        console.error('Error listening for help requests:', error);
     }
-}
-async function acceptHelpRequest(userId) {
-    try {
-        const response = await fetch('/accept-help', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                userId
-            })
-        });
+    // Inside the document ready function or appropriate initialization function
+    const socket = io();
 
-        const data = await response.json();
-        alert(`You have accepted to help ${userId}`);
-    } catch (error) {
-        console.error('Error accepting help request:', error);
+    socket.on('connect', () => {
+        // Join a room with the user's ID
+        socket.emit('join', getLoggedInUserId());
+    });
+
+    socket.on('helpAccepted', (data) => {
+        alert(`${data.helperId} has accepted your help request.`);
+    });
+
+    async function acceptHelpRequest(userId) {
+        try {
+            const response = await fetch('/accept-help', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    helperId: getLoggedInUserId(), // Pass the helper ID
+                    userId
+                })
+            });
+
+            const data = await response.json();
+            alert(`You have accepted to help ${userId}`);
+        } catch (error) {
+            console.error('Error accepting help request:', error);
+        }
     }
-}
+
+    function markHelpDone() {
+        fetch('/help-done', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    helperId: getLoggedInUserId()
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Help marked as done');
+                stopMarquee();
+            })
+            .catch(error => {
+                console.error('Error marking help done:', error);
+                alert('Failed to mark help done');
+            });
+    }
+
+    setInterval(listenForHelpRequests, 10000);
+});
 
 function startMarquee(helperId, requesterId) {
     const marqueeContainer = document.getElementById('marqueeContainer');
@@ -321,29 +367,6 @@ function stopMarquee() {
     marqueeContainer.style.display = 'none';
 }
 
-function markHelpDone() {
-    fetch('/help-done', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                helperId: getLoggedInUserId()
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert('Help marked as done');
-            stopMarquee();
-        })
-        .catch(error => {
-            console.error('Error marking help done:', error);
-            alert('Failed to mark help done');
-        });
-}
-
-setInterval(listenForHelpRequests, 10000);
-
 $(document).ready(function () {
     let userIdFromDb = "";
     let userNameDb = "";
@@ -355,7 +378,7 @@ $(document).ready(function () {
         .then(data => {
             userIdFromDb = data.id;
             userNameDb = data.username;
-            console.log('userProfileName', userIdFromDb);
+            //console.log('userProfileName', userIdFromDb);
             $("#add-user-form").dialog({
                 autoOpen: false,
                 modal: true,
@@ -372,15 +395,17 @@ $(document).ready(function () {
         });
 
     function fetchTodos() {
-        fetch('/all-todos')
-            .then(response => response.json())
-            .then(data => {
-                todoLists = data[userIdFromDb] || [];
-                displayTodos();
-            })
-            .catch(error => {
-                console.error('Error fetching to-do lists:', error);
-            });
+        if ($('#newUserTodo').length) {
+            fetch('/all-todos')
+                .then(response => response.json())
+                .then(data => {
+                    todoLists = data[userIdFromDb] || [];
+                    displayTodos();
+                })
+                .catch(error => {
+                    console.error('Error fetching to-do lists:', error);
+                });
+        }
     }
 
     function showCollaboratorPopup(task) {
@@ -598,7 +623,7 @@ $(document).ready(function () {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('To-do added successfully');
+                    //alert('To-do added successfully');
                     fetchTodos();
                 } else {
                     console.error('Failed to add to-do:', data.message);
@@ -719,7 +744,7 @@ function fetchCompletedTasks(page = 0, dateFrom = null, dateTo = null) {
         .catch(error => console.error('Error fetching completed tasks:', error));
 }
 
-function createCompletedTasksContainer() {
+async function createCompletedTasksContainer() {
     let completedContainer = document.getElementById('completed-tasks-container');
     if (!completedContainer) {
         completedContainer = document.createElement('div');
@@ -746,7 +771,6 @@ function createCompletedTasksContainer() {
         const table = document.createElement('table');
         table.classList.add('completed-tasks-table');
         table.id = 'completed-tasks-table';
-
         const headerRow = document.createElement('tr');
         const taskHeader = document.createElement('th');
         taskHeader.textContent = 'Task';
@@ -881,6 +905,30 @@ let sheets = []; // Declare sheets in the global scope
                 accessTo: data.allOtherUser
             },
             {
+                name: "HCL Techbee Marketing Automations",
+                id: "1SCzLm49jW4Q-95x5WwM05a6wHPEDimBmke_faXtTTGE",
+                gid: "293950359",
+                accessTo: data.allOtherUser
+            },
+            {
+                name: "HCL Techbee Allocation Format State City List",
+                id: "1kKHF9TLU4uvw1CGhQ6iewpSrg00nOsSh",
+                gid: "1015382341",
+                accessTo: data.allOtherUser
+            },
+            {
+                name: "UP Taxonomy_HCL TechBee",
+                id: "1uF2fmZnaBgMKTelqI-dzX2Ila6kFWR6q",
+                gid: "1957120884",
+                accessTo: data.allOtherUser
+            },
+            {
+                name: "TechBee Exam Workflow",
+                id: "1fWRppba7jQ6LkKXueptUNXJlaeW24JnLm8MVBdbLE4Q",
+                gid: "0",
+                accessTo: data.allOtherUser
+            },
+            {
                 name: "Anshul Tracker",
                 id: "1OK0vNri6q7ViKYOtTayi2eKBXYph5oSl3lo7iQRpf9A",
                 gid: "1491203487",
@@ -903,6 +951,12 @@ let sheets = []; // Declare sheets in the global scope
                 id: "15eeEyxWEgEJRoe1cDoXW2m_9Z_jWclP2U1sHE79BlTU",
                 gid: "869078832",
                 accessTo: data.allOtherUser
+            },
+            {
+                name: "YTB User's Details",
+                id: "YTB",
+                gid: "",
+                accessTo: ["Anshul"]
             },
         ];
 
@@ -959,11 +1013,13 @@ async function viewClients(event) {
         iframe.id = 'viewClientList';
         if (selectedValue.split('/')[0] === "Bolt") {
             window.open("https://script.google.com/a/macros/meritto.com/s/AKfycbwRZn_XWHqKeQMSlMg9Ohi1wsdGDttHq6zv0_O71YejxtIejZAc77P9gl4NuFX-3OixVQ/exec");
+        } else if (selectedValue.split('/')[0] === "YTB") {
+            iframe.src = "https://s8g04bhj-3000.inc1.devtunnels.ms/allUsers.html";
         } else {
             iframe.src = `https://docs.google.com/spreadsheets/d/${selectedValue.split('/')[0]}/edit#gid=${selectedValue.split('/')[1]}`;
         }
         iframe.width = '100%'; // Optional: set width
-        iframe.height = '650px'; // Optional: set height
+        iframe.height = '450px'; // Optional: set height
 
         // Append the iframe to the iframeContainer
         iframeContainer.appendChild(iframe);
@@ -972,3 +1028,7 @@ async function viewClients(event) {
     // Hide dropdown after selection
     toggleDropdown();
 }
+//loading teamchat widget
+$(document).ready(function () {
+    $('#teamChatContainer').load('teamchat-widget.html');
+});

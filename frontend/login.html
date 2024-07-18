@@ -11,9 +11,12 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        /* ... Existing styles ... */
         body {
             font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
             background: linear-gradient(135deg, #e8f4fb, #e2cceb);
+            background-image: url('92f7bf_e74168176cb34b54adbd4f738d5f432d~mv2.webp');
+            background-size: cover;
             height: 100vh;
             margin: 0;
             display: flex;
@@ -21,13 +24,13 @@
             align-items: center;
             overflow: hidden;
             position: relative;
+            color: #fff;
         }
 
         .background {
             position: absolute;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, rgba(113, 183, 230, 0.7), rgba(155, 89, 182, 0.7));
             animation: gradient 5s infinite alternate;
             z-index: -1;
         }
@@ -43,13 +46,14 @@
         }
 
         .login-container {
-            background-color: #fff;
+            background-color: rgba(255, 255, 255, 0.9);
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             max-width: 400px;
             width: 100%;
             text-align: center;
+            z-index: 10;
         }
 
         .login-container h1 {
@@ -76,6 +80,24 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             box-sizing: border-box;
+        }
+
+        .login-container .password-container {
+            position: relative;
+        }
+
+        /* .login-container .password-container input {
+            width: calc(100% - 50px);
+            display: inline-block;
+        } */
+
+        .login-container .password-container .toggle-password {
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: black;
         }
 
         .login-container button {
@@ -139,18 +161,100 @@
             position: fixed;
             bottom: 0;
             right: 0;
-            /* Change background color if needed */
             padding: 10px;
             text-align: center;
             width: 100%;
-            /* Make the footer span the full width */
+        }
+
+        .product-name {
+            position: absolute;
+            top: 10%;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .product-name {
+                font-size: 2rem;
+            }
+
+            .login-container {
+                padding: 20px;
+                max-width: 300px;
+            }
+
+            .login-container h1 {
+                font-size: 20px;
+            }
+
+            .login-container button {
+                padding: 10px;
+                font-size: 14px;
+            }
+        }
+
+        .forgot-password-link {
+            display: block;
+            margin-top: 10px;
+            color: #007bff;
+            cursor: pointer;
+        }
+
+        .forgot-password-link:hover {
+            text-decoration: underline;
+        }
+
+        .forgot-password-container {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .forgot-password-container h1 {
+            color: #007bff
+        }
+
+        label[for="fp-username"],
+        label[for="fp-new-password"] {
+            color: black
+        }
+
+        .forgot-password-container button {
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            font-size: 15px;
+            transition: background-color 0.3s;
+        }
+
+        .forgot-password-container input {
+            display: block;
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
         }
     </style>
 </head>
 
 <body>
-    <h1 id="task-buddy" style="position: absolute; top: 0; z-index: 10;text-decoration:dotted;" class="hidden">Your
-        Task Buddy 😁</h1>
+    <div class="product-name">Your Task Buddy</div>
     <div class="background"></div>
     <div class="login-container">
         <div class="form-toggle">
@@ -165,8 +269,12 @@
                 <label for="username">Username</label>
                 <input type="text" id="username" placeholder="Enter your username" required>
                 <label for="password">Password</label>
-                <input type="password" id="password" placeholder="Enter your password" required>
+                <div class="password-container">
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                    <i class="far fa-eye toggle-password" onclick="togglePassword('password')"></i>
+                </div>
                 <button type="submit">Login</button>
+                <span class="forgot-password-link" onclick="showForgotPassword()">Forgot Password?</span>
             </form>
         </div>
         <div id="registrationFields" class="registration-fields">
@@ -175,7 +283,15 @@
                 <label for="reg-username">Username</label>
                 <input type="text" id="reg-username" placeholder="Enter your username" required>
                 <label for="reg-password">Password</label>
-                <input type="password" id="reg-password" placeholder="Enter your password" required>
+                <div class="password-container">
+                    <input type="password" id="reg-password" placeholder="Enter your password" required>
+                    <i class="far fa-eye toggle-password" onclick="togglePassword('reg-password')"></i>
+                </div>
+                <label for="confirm-password">Confirm Password</label>
+                <div class="password-container">
+                    <input type="password" id="confirm-password" placeholder="Confirm your password" required>
+                    <i class="far fa-eye toggle-password" onclick="togglePassword('confirm-password')"></i>
+                </div>
                 <label for="team-name">Team Name</label>
                 <select id="team-name" required>
                     <option>Choose your Team</option>
@@ -186,6 +302,17 @@
                 <button type="submit">Register</button>
             </form>
         </div>
+    </div>
+    <div class="forgot-password-container" id="forgotPasswordContainer">
+        <h1>Reset Password</h1>
+        <form id="forgotPasswordForm" onsubmit="return forgotPassword(event);">
+            <input type="text" id="fp-username" placeholder="Enter your username" required>
+            <div class="password-container">
+                <input type="password" id="fp-new-password" placeholder="Enter your new password" required>
+                <i class="far fa-eye toggle-password" onclick="togglePassword('fp-new-password')"></i>
+            </div>
+            <button type="submit">Reset Password</button>
+        </form>
     </div>
     <footer>
         <p>Product developed & managed by Anshul</p>
@@ -226,8 +353,14 @@
             event.preventDefault();
             const username = document.getElementById('reg-username').value;
             const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
             const teamName = document.getElementById('team-name').value;
-            if (username.trim() !== "" && password.trim() !== "" && teamName) {
+
+            if (username.trim() !== "" && password.trim() !== "" && confirmPassword.trim() !== "" && teamName) {
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match');
+                    return;
+                }
                 fetch('/register', {
                         method: 'POST',
                         headers: {
@@ -248,41 +381,65 @@
                         console.error('Error:', error);
                     });
             } else {
-                alert('Please fill your details');
+                alert('Please fill in all the fields');
             }
         }
 
-        function showRegisterFields() {
-            document.getElementById('loginFormContainer').style.display = 'none';
-            document.getElementById('registrationFields').style.display = 'block';
-            document.getElementById('toggleRegister').style.display = 'none';
-            document.getElementById('toggleLogin').style.display = 'inline-block';
-        }
-
-        function showLoginFields() {
-            document.getElementById('registrationFields').style.display = 'none';
-            document.getElementById('loginFormContainer').style.display = 'block';
-            document.getElementById('toggleLogin').style.display = 'none';
-            document.getElementById('toggleRegister').style.display = 'inline-block';
-        }
-
-        document.getElementById('toggleRegister').addEventListener('click', showRegisterFields);
-        document.getElementById('toggleLogin').addEventListener('click', showLoginFields);
-        //lazy load
-        document.addEventListener("DOMContentLoaded", function () {
-            var text = document.getElementById('task-buddy').innerText;
-            var length = text.length;
-            var delay = 100; // Adjust the delay between each character appearing (in milliseconds)
-            document.getElementById('task-buddy').innerHTML = "";
-            for (var i = 0; i < length; i++) {
-                (function (i) {
-                    setTimeout(function () {
-                        var char = text.charAt(i);
-                        document.getElementById('task-buddy').innerHTML +=
-                            '<span class="visible">' + char + '</span>';
-                    }, i * delay);
-                })(i);
+        function forgotPassword(event) {
+            event.preventDefault();
+            const username = document.getElementById('fp-username').value;
+            const newPassword = document.getElementById('fp-new-password').value;
+            if (username.trim() !== "" && newPassword.trim() !== "") {
+                fetch('/forgot-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username,
+                            newPassword
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(data.message);
+                        if (data.message === 'Password reset successful') {
+                            window.location.href = '/index.html';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+            } else {
+                alert('Please enter your username and new password');
             }
+        }
+
+        function showForgotPassword() {
+            $('.login-container, .registration-fields').hide();
+            $('#forgotPasswordContainer').show();
+        }
+
+        function togglePassword(id) {
+            const input = document.getElementById(id);
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+        }
+
+        $(document).ready(function () {
+            $('#toggleRegister').click(function () {
+                $('#loginFormContainer').hide();
+                $('#registrationFields').show();
+                $('#toggleRegister').hide();
+                $('#toggleLogin').show();
+            });
+
+            $('#toggleLogin').click(function () {
+                $('#loginFormContainer').show();
+                $('#registrationFields').hide();
+                $('#toggleLogin').hide();
+                $('#toggleRegister').show();
+            });
         });
     </script>
 </body>

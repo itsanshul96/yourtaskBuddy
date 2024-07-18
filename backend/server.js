@@ -2,15 +2,18 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const path = require('path');
 const session = require('express-session');
-const {
-    Parser
-} = require('json2csv');
 const bcrypt = require('bcrypt');
 const mysql = require('mysql2');
-const SSE = require('sse');
+const http = require('http');
+const initializeSocket = require('./socketServer'); // Import the socket server
+
 const app = express();
+const server = http.createServer(app);
+const io = initializeSocket(server); // Initialize the socket server
+
 const PORT = 3000;
-let helpRequests = []; // Array to store help requests
+let helpRequests = [];
+// let onlineUsers = new Set(); // To track online users
 
 // MySQL connection pool setup
 const pool = mysql.createPool({
@@ -21,7 +24,7 @@ const pool = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0,
-    connectTimeout: 35000 // Increase the timeout value if needed
+    connectTimeout: 35000
 });
 
 // Middleware to parse JSON bodies
@@ -29,7 +32,6 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended: true
 }));
-
 app.use(session({
     secret: 'your-secret-key',
     resave: false,
@@ -58,10 +60,8 @@ app.post('/login', (req, res) => {
     const query = 'SELECT * FROM users WHERE username = ?';
     pool.query(query, [username], (err, results) => {
         if (err) throw err;
-        console.log('results', results);
         if (results.length > 0) {
             const user = results[0];
-            console.log('password', password);
             if (bcrypt.compareSync(password, user.password)) {
                 req.session.user = user.id;
                 res.send({
@@ -87,9 +87,7 @@ app.post('/register', (req, res) => {
         password,
         teamName
     } = req.body;
-    console.log('Password', password);
     const hashedPassword = bcrypt.hashSync(password, 10);
-    console.log('Password', password, 'hashed password', hashedPassword);
 
     const checkUserQuery = 'SELECT * FROM users WHERE username = ?';
     pool.query(checkUserQuery, [username], (err, results) => {
@@ -99,12 +97,38 @@ app.post('/register', (req, res) => {
                 message: 'User already exists'
             });
         } else {
-            const insertUserQuery = 'INSERT INTO users (username, password,teamName) VALUES (?, ?, ?)';
+            const insertUserQuery = 'INSERT INTO users (username, password, teamName) VALUES (?, ?, ?)';
             pool.query(insertUserQuery, [username, hashedPassword, teamName], (err) => {
                 if (err) throw err;
                 res.send({
                     message: 'User registered successfully'
                 });
+            });
+        }
+    });
+});
+
+// Forgot Password Route
+app.post('/forgot-password', (req, res) => {
+    const {
+        username,
+        newPassword
+    } = req.body;
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
+    const query = 'SELECT * FROM users WHERE username = ?';
+    pool.query(query, [username], (err, results) => {
+        if (err) throw err;
+        if (results.length > 0) {
+            const updateQuery = 'UPDATE users SET password = ? WHERE username = ?';
+            pool.query(updateQuery, [hashedPassword, username], (err) => {
+                if (err) throw err;
+                res.send({
+                    message: 'Password reset successful'
+                });
+            });
+        } else {
+            res.status(404).send({
+                message: 'Username not found'
             });
         }
     });
@@ -240,7 +264,6 @@ app.post('/mark-done', isAuthenticated, (req, res) => {
     });
 });
 
-
 // Endpoint to delete a user's status and to-do list
 app.delete('/delete-user/:userId', isAuthenticated, (req, res) => {
     const userId = req.params.userId;
@@ -266,7 +289,6 @@ app.delete('/delete-user/:userId', isAuthenticated, (req, res) => {
                 user_id = userData.id;
             }
         });
-
 
         if (pathname === "/manager-view.html") {
             console.log('user_id', user_id);
@@ -299,7 +321,7 @@ app.delete('/delete-user/:userId', isAuthenticated, (req, res) => {
 // Endpoint for manager to get team status
 app.get('/team-status', isAuthenticated, (req, res) => {
     const getTeamStatusQuery = `
-        SELECT users.username,users.teamName, team_status.status, team_status.tickets_count 
+        SELECT users.username, users.teamName, team_status.status, team_status.tickets_count 
         FROM team_status
         JOIN users ON team_status.user_id = users.id
     `;
@@ -308,11 +330,21 @@ app.get('/team-status', isAuthenticated, (req, res) => {
         res.json(results);
     });
 });
+//getting all user to display on frontend
+app.get("/all-users", isAuthenticated, (req, res) => {
+    const allUserQuery = 'select * from users';
+    pool.query(allUserQuery, (err, results) => {
+        if (err) throw err;
+        res.json({
+            "allUserData": results
+        });
+    })
+});
 
 // Endpoint to get the logged-in user's username
 app.get('/get-user', isAuthenticated, (req, res) => {
     const userId = req.session.user;
-    const getUserQuery = 'SELECT username,id,teamName FROM users WHERE id = ?';
+    const getUserQuery = 'SELECT username, id, teamName FROM users WHERE id = ?';
     const allUserExceptLoggedOne = 'SELECT username FROM users';
     pool.query(getUserQuery, [userId], (err, results) => {
         if (err) throw err;
@@ -336,7 +368,6 @@ app.get('/get-user', isAuthenticated, (req, res) => {
 
     });
 });
-
 
 // Serve login.html without authentication
 app.get('/login.html', (req, res) => {
@@ -409,12 +440,15 @@ app.post('/accept-help', isAuthenticated, (req, res) => {
         helperId,
         userId
     } = req.body;
-    // Find and remove the help request
     const index = helpRequests.findIndex(request => request.userId === userId);
-    console.log('index', index);
     if (index !== -1) {
         helpRequests.splice(index, 1);
-        // Optionally, notify the requester (you may implement this based on your app's notification system)
+
+        // Emit event to notify the requester
+        io.to(userId).emit('helpAccepted', {
+            helperId
+        });
+
         res.send({
             message: 'Help request accepted'
         });
@@ -424,6 +458,7 @@ app.post('/accept-help', isAuthenticated, (req, res) => {
         });
     }
 });
+
 // Endpoint to get completed tasks
 app.get('/completed-todos', isAuthenticated, (req, res) => {
     const userId = req.session.user;
@@ -484,6 +519,7 @@ app.get('/download-completed-tasks', isAuthenticated, (req, res) => {
         res.send(csv);
     });
 });
+
 // Route to fetch team members
 app.get('/team-members', isAuthenticated, (req, res) => {
     const userId = req.session.user;
@@ -543,8 +579,20 @@ app.post('/add-collaborator', isAuthenticated, (req, res) => {
         });
     });
 });
+app.get('/all-teams', isAuthenticated, (req, res) => {
+    const getAllTeamsQuery = 'SELECT DISTINCT teamName FROM users';
+    pool.query(getAllTeamsQuery, (err, results) => {
+        if (err) {
+            res.status(500).send({
+                error: 'Database error'
+            });
+            return;
+        }
+        res.json(results);
+    });
+});
 
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

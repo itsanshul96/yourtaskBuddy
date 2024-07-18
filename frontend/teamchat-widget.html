@@ -1,0 +1,36 @@
+<div id="teamChatWidget">
+    <div style="position: relative;">
+        <button id="teamChatButton"><i class="fas fa-comments"></i></button>
+        <div id="chatBadge">0</div>
+    </div>
+    <div id="chat" title="Team Chat">
+        <div id="messages"></div>
+        <form id="messageForm">
+            <button id="emojiButton" type="button"><i class="far fa-smile"></i></button>
+            <button id="gifButton" type="button"><i class="far fa-file-video"></i></button>
+            <input type="text" id="messageInput" placeholder="Type a message..." required />
+            <button type="submit">Send</button>
+        </form>
+        <div class="gif-search-container" id="gifSearchContainer">
+            <input type="text" id="gifSearchInput" placeholder="Search GIFs" />
+            <div class="gif-results" id="gifResults"></div>
+        </div>
+    </div>
+    <div id="teamSelectDialog" title="Select Team to Chat">
+        <label for="teamSelect">Choose a team:</label>
+        <select id="teamSelect">
+            <!-- Options will be dynamically populated -->
+        </select>
+        <button id="joinTeamButton">Join Team</button>
+    </div>
+</div>
+
+<!-- Include required scripts and styles for the widget -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/emoji-button.min.js"></script>
+<script src="teamchat-widget.js"></script>
+<link rel="stylesheet" href="teamchat-widget.css">

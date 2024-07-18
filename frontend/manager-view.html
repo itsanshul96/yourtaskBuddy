@@ -5,104 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Status Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-    <script src="script.js"></script>
+    <script src="/script.js"></script>
     <link rel="stylesheet" href="managerView.css">
+    <script src="https://cdn.jsdelivr.net/npm/@joeattardi/emoji-button@4.6.2/dist/emoji-button.min.js"></script>
 </head>
-<style>
-    .heading {
-        text-align: center;
-        margin: 20px 0;
-    }
-
-    .container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .card {
-        background-color: white;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        margin: 10px;
-        padding: 20px;
-        width: 300px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .card h4 {
-        margin-top: 0;
-        color: #007bff;
-    }
-
-    .list {
-        list-style-type: none;
-        padding: 0;
-    }
-
-    .list li {
-        margin: 5px 0;
-    }
-
-    #requestHelpButton {
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        padding: 10px;
-        cursor: pointer;
-    }
-
-    #requestHelpButton:hover {
-        background-color: #c82333;
-    }
-
-    .marquee-container {
-        width: 100%;
-        background-color: yellow;
-        color: black;
-        font-weight: bold;
-        padding: 10px 0;
-        display: none;
-        /* Hidden by default */
-    }
-
-    /* Existing CSS ... */
-
-    #dropdown {
-        display: none;
-        position: absolute;
-        top: 100%;
-        /* Align the dropdown just below the button */
-        left: 0;
-        background-color: white;
-        box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
-        z-index: 1;
-        /* Ensure the dropdown is the same width as the button */
-    }
-
-    #dropdown ul {
-        list-style-type: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    #dropdown li {
-        padding: 8px 16px;
-        cursor: pointer;
-        white-space: nowrap;
-        color: #007bff;
-        /* Prevent text wrapping */
-    }
-
-    #dropdown li:hover {
-        background-color: #ddd;
-    }
-</style>
 
 <body>
     <div class="task-bar">
@@ -116,10 +26,12 @@
             <a href="/index.html">Update Status</a>
             <a href="/myTodoTask.html">Get To-Do Dashboard</a>
         </div>
-        <span id="username"></span>
+        <div class="center-text">
+            <span id="username">Welcome, Arpit</span>
+        </div>
         <div class="right-buttons">
-            <input class="userId" id="userId" placeholder="Delete User Name" value="">
-            <button id="userDelete" onclick="userDelete()"><i class="fas fa-trash-alt"></i></button>
+            <!-- <input class="userId" id="userId" placeholder="Delete User Name" value="">
+            <button id="userDelete" onclick="userDelete()"><i class="fas fa-trash-alt"></i></button> -->
             <button onclick="logout()">Logout</button>
             <div class="auto-refresh-toggle-container">
                 <input type="checkbox" id="autoRefreshToggle" onchange="toggleAutoRefresh()"
@@ -129,6 +41,7 @@
             </div>
         </div>
     </div>
+
     <div class="marquee-container" id="marqueeContainer">
         <marquee id="marqueeText"></marquee>
     </div>
@@ -173,9 +86,8 @@
     </div>
     <div class="card-container" id="permissionRightsMsg"></div>
     <div id="iframeContainer"></div>
-    <footer>
-        <p>Product developed & managed by Anshul</p>
-    </footer>
+    <!-- temchat widget -->
+    <div id="teamChatContainer"></div>
 </body>
 
 </html>

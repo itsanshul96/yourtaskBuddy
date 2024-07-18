@@ -31,9 +31,17 @@ body {
 .task-bar .right-buttons {
     display: flex;
     gap: 10px;
+    margin-left: 50px;
+    
 }
+.task-bar .right-buttons {
+    margin-right: 100px;
+}
+span#username {
+    margin-right:100px!important;
+    }
 
-.right-buttons .userId {
+.task-bar .right-buttons .userId {
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ccc;
@@ -61,7 +69,6 @@ body {
     background-color: #003f7f;
 }
 
-
 .card {
     background-color: #fff;
     padding: 20px;
@@ -69,14 +76,12 @@ body {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-
 .heading {
     margin-top: 0;
     font-size: 24px;
     color: #333;
     text-align: center;
 }
-
 
 .resource {
     margin-top: 20px;
@@ -230,9 +235,6 @@ body {
     /* Ensure the card is a positioned element */
 }
 
-
-
-/* new css*/
 /* Style for the auto-refresh toggle */
 .auto-refresh-toggle-container {
     display: flex;
@@ -308,6 +310,8 @@ body {
     flex-wrap: wrap;
     gap: 20px;
     justify-content: center;
+    transform: translateY(200px);
+    font-size: large;
 }
 
 footer {
@@ -374,4 +378,94 @@ footer {
     100% {
         transform: rotate(360deg);
     }
+}
+
+.heading {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.card {
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin: 10px;
+    padding: 20px;
+    width: 300px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.card h4 {
+    margin-top: 0;
+    color: #007bff;
+}
+
+.list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.list li {
+    margin: 5px 0;
+}
+
+#requestHelpButton {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+}
+
+#requestHelpButton:hover {
+    background-color: #c82333;
+}
+
+.marquee-container {
+    width: 100%;
+    background-color: yellow;
+    color: black;
+    font-weight: bold;
+    padding: 10px 0;
+    display: none;
+}
+
+#dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+#dropdown ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+#dropdown li {
+    padding: 8px 16px;
+    cursor: pointer;
+    white-space: nowrap;
+    color: #007bff;
+}
+
+#dropdown li:hover {
+    background-color: #ddd;
+}
+
+.center-text {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <script src="script.js"></script>
+    <!-- <script src="/socket.io/socket.io.js"></script> Correctly reference Socket.io script -->
 </head>
 
 <body class="resourceViews">
@@ -21,7 +22,7 @@
             <a href="/manager-view.html">Get Dashboard</a>
             <a href="/myTodoTask.html">Get To-DO Dashboard</a>
         </div>
-        <span id="username"></span>
+        <span id="username" style="margin-right: 258px;"></span>
         <div class="right-buttons">
             <button class="refresh-button" onclick="location.reload();"><i class="fas fa-sync-alt"></i></button>
             <button onclick="logout()">Logout</button>
@@ -67,9 +68,9 @@
         <!-- To-Do List Form End -->
         <ul id="todo-list"></ul>
     </div>
-    <footer>
-        <p>Product developed & managed by Anshul</p>
-    </footer>
+    <!-- temchat widget -->
+    <div id="teamChatContainer"></div>
+    
 </body>
 
 </html>
